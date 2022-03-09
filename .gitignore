@@ -189,3 +189,5 @@ dist
 #hardhat
 artifacts/
 cache/
+typechain/
+
