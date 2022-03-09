@@ -38,7 +38,7 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
     * @notice toggles mint availability status, default is false
     * @dev Callable by owner
     */
-    function toggleMintStatus() public onlyOwner {
+    function toggleMintStatus() external onlyOwner {
         isMintActive = !isMintActive;
     }
 
