@@ -15,13 +15,9 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
 
     string public baseURI;
 
-    bool public isSaleActive = false;
+    bool public isMintActive = false;
     uint public maxTokenPurchase = 0;
     uint256 public tokenPrice = 100000000000000000; //0.1 ETH
-
-    event Lock();
-    event NonFungibleTokenRecovery(address indexed token, uint256 tokenId);
-    event TokenRecovery(address indexed token, uint256 amount);
 
     /**
      * @notice Constructor
@@ -39,12 +35,20 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
     }
 
     /**
+    * @notice toggles mint availability status, default is false
+    * @dev Callable by owner
+    */
+    function toggleMintStatus() public onlyOwner {
+        isMintActive = !isMintActive;
+    }
+
+    /**
      * @notice Allows user to mint a token to a specific address
      * @param tokenAmount: amount to mint token
      * @dev Callable by owner
      */
     function mintHoneyBadger(uint tokenAmount) public payable {
-        require(isSaleActive, "Sale is not active");
+        require(isMintActive, "Mint is not active");
         require(maxTokenPurchase <= tokenAmount, "Too greedy" );
         require(totalSupply() + tokenAmount <= maxSupply, "Purchase would exceed max supply");
         require(tokenPrice * tokenAmount <= msg.value, "Insufficent ether value");
@@ -55,32 +59,6 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
                 _safeMint(msg.sender, mintIndex);
             }
         }
-    }
-
-    /**
-     * @notice Allows the owner to recover non-fungible tokens sent to the contract by mistake
-     * @param _token: NFT token address
-     * @param _tokenId: tokenId
-     * @dev Callable by owner
-     */
-    function recoverNonFungibleToken(address _token, uint256 _tokenId) external onlyOwner {
-        IERC721(_token).transferFrom(address(this), address(msg.sender), _tokenId);
-
-        emit NonFungibleTokenRecovery(_token, _tokenId);
-    }
-
-    /**
-     * @notice Allows the owner to recover tokens sent to the contract by mistake
-     * @param _token: token address
-     * @dev Callable by owner
-     */
-    function recoverToken(address _token) external onlyOwner {
-        uint256 balance = IERC20(_token).balanceOf(address(this));
-        require(balance != 0, "Operations: Cannot recover zero balance");
-
-        IERC20(_token).safeTransfer(address(msg.sender), balance);
-
-        emit TokenRecovery(_token, balance);
     }
 
     /**
