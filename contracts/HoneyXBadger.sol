@@ -5,6 +5,7 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract HoneyXBadger is ERC721Enumerable, Ownable {
     using SafeERC20 for IERC20;
@@ -12,8 +13,11 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
 
     uint256 public immutable maxSupply;
 
-    bool public isLocked;
     string public baseURI;
+
+    bool public isSaleActive = false;
+    uint public maxTokenPurchase = 0;
+    uint256 public tokenPrice = 100000000000000000; //0.1 ETH
 
     event Lock();
     event NonFungibleTokenRecovery(address indexed token, uint256 tokenId);
@@ -35,24 +39,22 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
     }
 
     /**
-     * @notice Allows the owner to lock the contract
+     * @notice Allows user to mint a token to a specific address
+     * @param tokenAmount: amount to mint token
      * @dev Callable by owner
      */
-    function lock() external onlyOwner {
-        require(!isLocked, "Operations: Contract is locked");
-        isLocked = true;
-        emit Lock();
-    }
+    function mintHoneyBadger(uint tokenAmount) public payable {
+        require(isSaleActive, "Sale is not active");
+        require(maxTokenPurchase <= tokenAmount, "Too greedy" );
+        require(totalSupply() + tokenAmount <= maxSupply, "Purchase would exceed max supply");
+        require(tokenPrice * tokenAmount <= msg.value, "Insufficent ether value");
 
-    /**
-     * @notice Allows the owner to mint a token to a specific address
-     * @param _to: address to receive the token
-     * @param _tokenId: tokenId
-     * @dev Callable by owner
-     */
-    function mint(address _to, uint256 _tokenId) external onlyOwner {
-        require(totalSupply() < maxSupply, "NFT: Total supply reached");
-        _mint(_to, _tokenId);
+        for(uint i = 0; i < tokenAmount; i++) {
+            uint256 mintIndex = totalSupply();
+            if (totalSupply() < maxSupply) {
+                _safeMint(msg.sender, mintIndex);
+            }
+        }
     }
 
     /**
@@ -87,7 +89,6 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
      * @dev Callable by owner
      */
     function setBaseURI(string memory _uri) external onlyOwner {
-        require(!isLocked, "Operations: Contract is locked");
         baseURI = _uri;
     }
 
