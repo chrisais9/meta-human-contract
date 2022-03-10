@@ -16,7 +16,7 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
     string public baseURI;
 
     bool public isMintSaleActive = false;
-    uint public maxTokenPurchase = 0;
+    uint public maxMintAmount = 0;
     uint256 public tokenPrice = 100000000000000000; //0.1 ETH
 
     /**
@@ -36,13 +36,13 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
 
     /**
     * @notice Start mint availability
-    * @param _maxTokenPurchase Max amout to Mint
+    * @param _maxMintAmount Max amout to Mint
     * @param _tokenPrice Mint Price
     * @dev Callable by owner
     */
-    function startMintSale(uint _maxTokenPurchase, uint256 _tokenPrice) external onlyOwner {
+    function startMintSale(uint _maxMintAmount, uint256 _tokenPrice) external onlyOwner {
         isMintSaleActive = true;
-        maxTokenPurchase = _maxTokenPurchase;
+        maxMintAmount = _maxMintAmount;
         tokenPrice = _tokenPrice;
     }
 
@@ -56,16 +56,16 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
 
     /**
      * @notice Allows user to mint a token to a specific address
-     * @param tokenAmount: amount to mint token
+     * @param mintAmount: amount to mint token
      * @dev Callable by owner
      */
-    function mintHoneyBadger(uint tokenAmount) public payable {
+    function mintHoneyBadger(uint mintAmount) public payable {
         require(isMintSaleActive, "Mint is not active");
-        require(maxTokenPurchase <= tokenAmount, "Too greedy" );
-        require(totalSupply() + tokenAmount <= maxSupply, "Purchase would exceed max supply");
-        require(tokenPrice * tokenAmount <= msg.value, "Insufficent ether value");
+        require(mintAmount <= maxMintAmount, "Too greedy" );
+        require(totalSupply() + mintAmount <= maxSupply, "Purchase would exceed max supply");
+        require(tokenPrice * mintAmount <= msg.value, "Insufficent ether value");
 
-        for(uint i = 0; i < tokenAmount; i++) {
+        for(uint i = 0; i < mintAmount; i++) {
             uint256 mintIndex = totalSupply();
             if (totalSupply() < maxSupply) {
                 _safeMint(msg.sender, mintIndex);
