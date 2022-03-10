@@ -103,4 +103,13 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
 
         return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString(), ".json")) : "";
     }
+
+    /**
+     * @notice Withdraw token to caller
+     * @dev Callable by owner
+     */
+    function withdraw() public onlyOwner {
+        uint256 balance = address(this).balance;
+        payable(msg.sender).transfer(balance);
+    }
 }
