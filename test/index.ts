@@ -43,6 +43,15 @@ describe("HoneyXBadger", function () {
   });
 
   describe("Base URI", function () {
+    const baseURI =
+      "https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt";
+
+    it("Should fail if sender is not owner", async function () {
+      await expect(
+        honeyXBadger.connect(addr1).setBaseURI(baseURI)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
     it("Should set the right BaseURI", async function () {
       const baseURI =
         "https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt";
