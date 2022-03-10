@@ -12,7 +12,7 @@ describe("HoneyXBadger", function () {
   let addr2: SignerWithAddress;
   let addrs: SignerWithAddress[];
 
-  beforeEach(async function () {
+  this.beforeAll(async function () {
     const HoneyXBadgerContract = await ethers.getContractFactory(
       "HoneyXBadger"
     );
@@ -27,6 +27,9 @@ describe("HoneyXBadger", function () {
     await honeyXBadger.deployed();
   });
   describe("Deployment", function () {
+    it("Should set the right owner", async function () {
+      expect(await honeyXBadger.owner()).to.equal(owner.address);
+    });
     it("Should return right name", async function () {
       expect(await honeyXBadger.name()).to.equal("HoneyXBadger");
     });
@@ -44,5 +47,45 @@ describe("HoneyXBadger", function () {
 
     //   expect(await greeter.greet()).to.equal("Hola, mundo!");
     // });
+  });
+
+  describe("Mint", function () {
+    it("Should sale status false by default", async function () {
+      expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
+    });
+
+    it("Should fail if sender is not owner", async function () {
+      await expect(
+        honeyXBadger.connect(addr1).startMintSale(1, "100000000000000000")
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+    describe("Mint Sale", function () {
+      it("Should start mint sale", async function () {
+        const startMintSaleTx = await honeyXBadger.startMintSale(
+          5,
+          "100000000000000000"
+        );
+
+        await startMintSaleTx.wait();
+
+        expect(await honeyXBadger.isMintSaleActive()).to.equal(true);
+      });
+
+      it("Should set the right max mint amount", async function () {
+        expect(await honeyXBadger.maxTokenPurchase()).to.equal(5);
+      });
+
+      it("Should set the right mint price", async function () {
+        expect(await honeyXBadger.tokenPrice()).to.equal("100000000000000000");
+      });
+
+      it("Should pause mint sale", async function () {
+        const startMintSaleTx = await honeyXBadger.pauseMintSale();
+
+        await startMintSaleTx.wait();
+
+        expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
+      });
+    });
   });
 });
