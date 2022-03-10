@@ -39,14 +39,6 @@ describe("HoneyXBadger", function () {
     it("Should return right max supply", async function () {
       expect(await honeyXBadger.maxSupply()).to.equal(10000);
     });
-    // it("Should return right name", async function () {
-    //   const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
-
-    //   // wait until the transaction is mined
-    //   await setGreetingTx.wait();
-
-    //   expect(await greeter.greet()).to.equal("Hola, mundo!");
-    // });
   });
 
   describe("Mint", function () {
