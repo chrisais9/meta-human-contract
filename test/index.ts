@@ -26,6 +26,7 @@ describe("HoneyXBadger", function () {
     );
     await honeyXBadger.deployed();
   });
+
   describe("Deployment", function () {
     it("Should set the right owner", async function () {
       expect(await honeyXBadger.owner()).to.equal(owner.address);
@@ -41,7 +42,19 @@ describe("HoneyXBadger", function () {
     });
   });
 
-  describe("Mint", function () {
+  describe("Base URI", function () {
+    it("Should set the right BaseURI", async function () {
+      const baseURI =
+        "https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt";
+      const setBaseURITx = await honeyXBadger.setBaseURI(baseURI);
+
+      await setBaseURITx.wait();
+
+      expect(await honeyXBadger.baseURI()).to.equal(baseURI);
+    });
+  });
+
+  describe("Mint Sale Status", function () {
     it("Should sale status false by default", async function () {
       expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
     });
@@ -51,33 +64,32 @@ describe("HoneyXBadger", function () {
         honeyXBadger.connect(addr1).startMintSale(1, "100000000000000000")
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
-    describe("Mint Sale", function () {
-      it("Should start mint sale", async function () {
-        const startMintSaleTx = await honeyXBadger.startMintSale(
-          5,
-          "100000000000000000"
-        );
 
-        await startMintSaleTx.wait();
+    it("Should start mint sale", async function () {
+      const startMintSaleTx = await honeyXBadger.startMintSale(
+        5,
+        "100000000000000000"
+      );
 
-        expect(await honeyXBadger.isMintSaleActive()).to.equal(true);
-      });
+      await startMintSaleTx.wait();
 
-      it("Should set the right max mint amount", async function () {
-        expect(await honeyXBadger.maxTokenPurchase()).to.equal(5);
-      });
+      expect(await honeyXBadger.isMintSaleActive()).to.equal(true);
+    });
 
-      it("Should set the right mint price", async function () {
-        expect(await honeyXBadger.tokenPrice()).to.equal("100000000000000000");
-      });
+    it("Should set the right max mint amount", async function () {
+      expect(await honeyXBadger.maxTokenPurchase()).to.equal(5);
+    });
 
-      it("Should pause mint sale", async function () {
-        const startMintSaleTx = await honeyXBadger.pauseMintSale();
+    it("Should set the right mint price", async function () {
+      expect(await honeyXBadger.tokenPrice()).to.equal("100000000000000000");
+    });
 
-        await startMintSaleTx.wait();
+    it("Should pause mint sale", async function () {
+      const startMintSaleTx = await honeyXBadger.pauseMintSale();
 
-        expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
-      });
+      await startMintSaleTx.wait();
+
+      expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
     });
   });
 });
