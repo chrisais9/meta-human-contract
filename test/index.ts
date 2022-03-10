@@ -64,20 +64,23 @@ describe("HoneyXBadger", function () {
   });
 
   describe("Mint Sale Status", function () {
+    const maxTokenPurchase = 1;
+    const tokenPrice = "100000000000000000";
+
     it("Should sale status false by default", async function () {
       expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
     });
 
     it("Should fail if sender is not owner", async function () {
       await expect(
-        honeyXBadger.connect(addr1).startMintSale(1, "100000000000000000")
+        honeyXBadger.connect(addr1).startMintSale(maxTokenPurchase, tokenPrice)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
     it("Should start mint sale", async function () {
       const startMintSaleTx = await honeyXBadger.startMintSale(
-        5,
-        "100000000000000000"
+        maxTokenPurchase,
+        tokenPrice
       );
 
       await startMintSaleTx.wait();
@@ -86,11 +89,11 @@ describe("HoneyXBadger", function () {
     });
 
     it("Should set the right max mint amount", async function () {
-      expect(await honeyXBadger.maxTokenPurchase()).to.equal(5);
+      expect(await honeyXBadger.maxTokenPurchase()).to.equal(maxTokenPurchase);
     });
 
     it("Should set the right mint price", async function () {
-      expect(await honeyXBadger.tokenPrice()).to.equal("100000000000000000");
+      expect(await honeyXBadger.tokenPrice()).to.equal(tokenPrice);
     });
 
     it("Should pause mint sale", async function () {
