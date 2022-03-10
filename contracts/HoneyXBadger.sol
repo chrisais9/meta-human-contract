@@ -41,7 +41,7 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
     * @dev Callable by owner
     */
     function startMintSale(uint _maxTokenPurchase, uint256 _tokenPrice) external onlyOwner {
-        isMintSaleActive = !isMintSaleActive;
+        isMintSaleActive = true;
         maxTokenPurchase = _maxTokenPurchase;
         tokenPrice = _tokenPrice;
     }
