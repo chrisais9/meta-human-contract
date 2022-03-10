@@ -15,7 +15,7 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
 
     string public baseURI;
 
-    bool public isMintActive = false;
+    bool public isMintSaleActive = false;
     uint public maxTokenPurchase = 0;
     uint256 public tokenPrice = 100000000000000000; //0.1 ETH
 
@@ -35,11 +35,23 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
     }
 
     /**
-    * @notice toggles mint availability status, default is false
+    * @notice Start mint availability
+    * @param _maxTokenPurchase Max amout to Mint
+    * @param _tokenPrice Mint Price
     * @dev Callable by owner
     */
-    function toggleMintStatus() external onlyOwner {
-        isMintActive = !isMintActive;
+    function startMintSale(uint _maxTokenPurchase, uint256 _tokenPrice) external onlyOwner {
+        isMintSaleActive = !isMintSaleActive;
+        maxTokenPurchase = _maxTokenPurchase;
+        tokenPrice = _tokenPrice;
+    }
+
+    /**
+    * @notice Pause mint availability
+    * @dev Callable by owner
+    */
+    function pauseMintSale() external onlyOwner {
+        isMintSaleActive = false;
     }
 
     /**
@@ -48,7 +60,7 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
      * @dev Callable by owner
      */
     function mintHoneyBadger(uint tokenAmount) public payable {
-        require(isMintActive, "Mint is not active");
+        require(isMintSaleActive, "Mint is not active");
         require(maxTokenPurchase <= tokenAmount, "Too greedy" );
         require(totalSupply() + tokenAmount <= maxSupply, "Purchase would exceed max supply");
         require(tokenPrice * tokenAmount <= msg.value, "Insufficent ether value");
