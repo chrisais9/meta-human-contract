@@ -10,7 +10,7 @@ describe("HoneyXBadger", function () {
     "https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt/";
 
   const maxMintAmount = 5;
-  const tokenPrice = "100000000000000000";
+  const tokenPrice = ethers.utils.parseEther("0.1");
 
   let honeyXBadger: HoneyXBadger;
   let owner: SignerWithAddress;
@@ -104,7 +104,7 @@ describe("HoneyXBadger", function () {
   });
 
   describe("Minting", function () {
-    it("Should fail if not mint sale started", async function () {
+    it("Should fail if mint sale is not started", async function () {
       await expect(honeyXBadger.mintHoneyBadger(1)).to.be.revertedWith(
         "Mint is not active"
       );
@@ -129,20 +129,24 @@ describe("HoneyXBadger", function () {
 
     it("Should fail if insufficent ether value to mint - single", async function () {
       await expect(
-        honeyXBadger.mintHoneyBadger(1, { value: "1000" })
+        honeyXBadger.mintHoneyBadger(1, {
+          value: ethers.utils.parseEther("0.001"),
+        })
       ).to.be.revertedWith("Insufficent ether value");
     });
 
     it("Should fail if insufficent ether value to mint - multiple", async function () {
       await expect(
-        honeyXBadger.mintHoneyBadger(4, { value: "100000000000000000" })
+        honeyXBadger.mintHoneyBadger(4, {
+          value: ethers.utils.parseEther("0.1"),
+        })
       ).to.be.revertedWith("Insufficent ether value");
     });
 
     it("Should mint NFT to sender - single", async function () {
       const mintTx = await honeyXBadger
         .connect(addr1)
-        .mintHoneyBadger(1, { value: "100000000000000000" });
+        .mintHoneyBadger(1, { value: ethers.utils.parseEther("0.1") });
 
       await mintTx.wait();
 
@@ -154,7 +158,7 @@ describe("HoneyXBadger", function () {
     it("Should mint NFT to sender - multiple", async function () {
       const mintTx = await honeyXBadger
         .connect(addr2)
-        .mintHoneyBadger(4, { value: "400000000000000000" });
+        .mintHoneyBadger(4, { value: ethers.utils.parseEther("0.4") });
 
       await mintTx.wait();
 
@@ -178,6 +182,23 @@ describe("HoneyXBadger", function () {
 
       await expect(honeyXBadger.tokenURI(99999)).to.be.revertedWith(
         "ERC721Metadata: URI query for nonexistent token"
+      );
+    });
+  });
+
+  describe("Withdraw", async function () {
+    it("Should fail if sender is not owner", async function () {
+      await expect(honeyXBadger.connect(addr1).withdraw()).to.be.revertedWith(
+        "Ownable: caller is not the owner"
+      );
+    });
+
+    it("Should return the right balance of withdrawn", async function () {
+      const withdrawTx = await honeyXBadger.withdraw();
+
+      await expect(withdrawTx).to.changeEtherBalance(
+        owner,
+        ethers.utils.parseEther("0.5")
       );
     });
   });
