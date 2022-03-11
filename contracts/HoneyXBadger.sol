@@ -6,8 +6,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "erc721a/contracts/ERC721A.sol";
 
-contract HoneyXBadger is ERC721Enumerable, Ownable {
+contract HoneyXBadger is ERC721A, Ownable{
     using SafeERC20 for IERC20;
     using Strings for uint256;
 
@@ -29,7 +30,7 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
         string memory _name,
         string memory _symbol,
         uint256 _maxSupply
-    ) ERC721(_name, _symbol) {
+    ) ERC721A(_name, _symbol) {
         require((_maxSupply == 100) || (_maxSupply == 1000) || (_maxSupply == 10000), "Operations: Wrong max supply");
         maxSupply = _maxSupply;
     }
@@ -64,13 +65,8 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
         require(mintAmount <= maxMintAmount, "Too greedy" );
         require(totalSupply() + mintAmount <= maxSupply, "Purchase would exceed max supply");
         require(tokenPrice * mintAmount <= msg.value, "Insufficent ether value");
-
-        for(uint i = 0; i < mintAmount; i++) {
-            uint256 mintIndex = totalSupply();
-            if (totalSupply() < maxSupply) {
-                _safeMint(msg.sender, mintIndex);
-            }
-        }
+        
+        _safeMint(msg.sender, mintAmount);
     }
 
     /**
@@ -80,30 +76,6 @@ contract HoneyXBadger is ERC721Enumerable, Ownable {
      */
     function setBaseURI(string memory _uri) external onlyOwner {
         baseURI = _uri;
-    }
-
-    /**
-     * @notice Returns a list of token IDs owned by `user` given a `cursor` and `size` of its token list
-     * @param user: address
-     * @param cursor: cursor
-     * @param size: size
-     */
-    function tokensOfOwnerBySize(
-        address user,
-        uint256 cursor,
-        uint256 size
-    ) external view returns (uint256[] memory, uint256) {
-        uint256 length = size;
-        if (length > balanceOf(user) - cursor) {
-            length = balanceOf(user) - cursor;
-        }
-
-        uint256[] memory values = new uint256[](length);
-        for (uint256 i = 0; i < length; i++) {
-            values[i] = tokenOfOwnerByIndex(user, cursor + i);
-        }
-
-        return (values, cursor + length);
     }
 
     /**
