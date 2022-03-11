@@ -6,6 +6,12 @@ import { ethers } from "hardhat";
 import { HoneyXBadger } from "../typechain";
 
 describe("HoneyXBadger", function () {
+  const baseURI =
+    "https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt/";
+
+  const maxMintAmount = 5;
+  const tokenPrice = "100000000000000000";
+
   let honeyXBadger: HoneyXBadger;
   let owner: SignerWithAddress;
   let addr1: SignerWithAddress;
@@ -43,9 +49,6 @@ describe("HoneyXBadger", function () {
   });
 
   describe("Base URI", function () {
-    const baseURI =
-      "https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt";
-
     it("Should fail if sender is not owner", async function () {
       await expect(
         honeyXBadger.connect(addr1).setBaseURI(baseURI)
@@ -53,8 +56,6 @@ describe("HoneyXBadger", function () {
     });
 
     it("Should set the right BaseURI", async function () {
-      const baseURI =
-        "https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt";
       const setBaseURITx = await honeyXBadger.setBaseURI(baseURI);
 
       await setBaseURITx.wait();
@@ -64,9 +65,6 @@ describe("HoneyXBadger", function () {
   });
 
   describe("Mint Sale Status", function () {
-    const maxMintAmount = 1;
-    const tokenPrice = "100000000000000000";
-
     it("Should sale status false by default", async function () {
       expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
     });
@@ -102,6 +100,85 @@ describe("HoneyXBadger", function () {
       await startMintSaleTx.wait();
 
       expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
+    });
+  });
+
+  describe("Minting", function () {
+    it("Should fail if not mint sale started", async function () {
+      await expect(honeyXBadger.mintHoneyBadger(1)).to.be.revertedWith(
+        "Mint is not active"
+      );
+    });
+
+    it("Should start mint sale", async function () {
+      const startMintSaleTx = await honeyXBadger.startMintSale(
+        maxMintAmount,
+        tokenPrice
+      );
+
+      await startMintSaleTx.wait();
+
+      expect(await honeyXBadger.isMintSaleActive()).to.equal(true);
+    });
+
+    it("Should fail mint amount is Bigger than max", async function () {
+      await expect(honeyXBadger.mintHoneyBadger(9999)).to.be.revertedWith(
+        "Too greedy"
+      );
+    });
+
+    it("Should fail if insufficent ether value to mint - single", async function () {
+      await expect(
+        honeyXBadger.mintHoneyBadger(1, { value: "1000" })
+      ).to.be.revertedWith("Insufficent ether value");
+    });
+
+    it("Should fail if insufficent ether value to mint - multiple", async function () {
+      await expect(
+        honeyXBadger.mintHoneyBadger(4, { value: "100000000000000000" })
+      ).to.be.revertedWith("Insufficent ether value");
+    });
+
+    it("Should mint NFT to sender - single", async function () {
+      const mintTx = await honeyXBadger
+        .connect(addr1)
+        .mintHoneyBadger(1, { value: "100000000000000000" });
+
+      await mintTx.wait();
+
+      expect(await honeyXBadger.connect(addr1).ownerOf(0)).to.equal(
+        addr1.address
+      );
+    });
+
+    it("Should mint NFT to sender - multiple", async function () {
+      const mintTx = await honeyXBadger
+        .connect(addr2)
+        .mintHoneyBadger(4, { value: "400000000000000000" });
+
+      await mintTx.wait();
+
+      expect(await honeyXBadger.connect(addr2).ownerOf(1)).to.equal(
+        addr2.address
+      );
+      expect(await honeyXBadger.connect(addr2).ownerOf(2)).to.equal(
+        addr2.address
+      );
+      expect(await honeyXBadger.connect(addr2).ownerOf(3)).to.equal(
+        addr2.address
+      );
+      expect(await honeyXBadger.connect(addr2).ownerOf(4)).to.equal(
+        addr2.address
+      );
+    });
+
+    it("Should return the right tokenURI", async function () {
+      expect(await honeyXBadger.tokenURI(0)).to.equal(baseURI + "0.json");
+      expect(await honeyXBadger.tokenURI(1)).to.equal(baseURI + "1.json");
+
+      await expect(honeyXBadger.tokenURI(99999)).to.be.revertedWith(
+        "ERC721Metadata: URI query for nonexistent token"
+      );
     });
   });
 });
