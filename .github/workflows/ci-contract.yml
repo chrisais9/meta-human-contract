@@ -21,6 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Generate Typechain
-        run: npm generate
+        run: npm run generate
       - name: Run tests
-        run: npm test
+        run: npm run test
