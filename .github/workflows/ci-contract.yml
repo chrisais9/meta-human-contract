@@ -23,4 +23,17 @@ jobs:
       - name: Generate Typechain
         run: npm run generate
       - name: Run tests
+        id: step_test
         run: npm run test
+      - name: Create commit comment success
+        if: ${{ steps.step_test.outcome == 'success' }}
+        uses: peter-evans/commit-comment@v1
+        with:
+          body: "유닛테스트를 통과하였습니다 ✅"
+      - name: Create commit comment fail
+        if: ${{ steps.step_test.outcome != 'success' }}
+        uses: peter-evans/commit-comment@v1
+        with:
+          body: "유닛테스트를 통과하지 못했습니다 ❌"
+    
+    
