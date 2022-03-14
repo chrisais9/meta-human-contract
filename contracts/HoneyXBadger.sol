@@ -58,14 +58,18 @@ contract HoneyXBadger is ERC721A, Ownable{
     /**
      * @notice Allows user to mint a token to a specific address
      * @param mintAmount: amount to mint token
-     * @dev Callable by owner
      */
     function mintHoneyBadger(uint mintAmount) public payable {
         require(isMintSaleActive, "Mint is not active");
-        require(mintAmount <= maxMintAmount, "Too greedy" );
+        require(mintAmount <= maxMintAmount, "Too greedy");
         require(totalSupply() + mintAmount <= maxSupply, "Purchase would exceed max supply");
         require(tokenPrice * mintAmount <= msg.value, "Insufficent ether value");
         
+        _safeMint(msg.sender, mintAmount);
+    }
+
+    function reserveHoneyBadger(uint mintAmount) public onlyOwner {
+        require(totalSupply() + mintAmount <= maxSupply, "Purchase would exceed max supply");
         _safeMint(msg.sender, mintAmount);
     }
 
