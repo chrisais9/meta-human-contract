@@ -18,7 +18,7 @@ contract HoneyXBadger is ERC721A, Ownable{
 
     bool public isMintSaleActive = false;
     uint public maxMintAmount = 0;
-    uint256 public tokenPrice = 100000000000000000; //0.1 ETH
+    uint256 public tokenPrice = 0.1 ether; //0.1 ETH
 
     /**
      * @notice Constructor
@@ -38,7 +38,7 @@ contract HoneyXBadger is ERC721A, Ownable{
     /**
      * @notice Starting token index
      */
-    function _startTokenId() internal pure override returns (uint256) {
+    function _startTokenId() internal view virtual override(ERC721A) returns (uint256) {
         return 1;
     }
 
@@ -96,7 +96,7 @@ contract HoneyXBadger is ERC721A, Ownable{
     /**
      * @notice base uri for internal usage
      */
-    function _baseURI() internal view virtual override returns (string memory) {
+    function _baseURI() internal view override(ERC721A) returns (string memory) {
         return _baseTokenURI;
     }
 
