@@ -36,6 +36,13 @@ contract HoneyXBadger is ERC721A, Ownable{
     }
 
     /**
+     * @notice Starting token index
+     */
+    function _startTokenId() internal view virtual override returns (uint256) {
+        return 1;
+    }
+
+    /**
     * @notice Start mint availability
     * @param _maxMintAmount Max amout to Mint
     * @param _tokenPrice Mint Price
@@ -88,6 +95,8 @@ contract HoneyXBadger is ERC721A, Ownable{
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+
+        super.tokenURI(tokenId);
 
         return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString(), ".json")) : "";
     }

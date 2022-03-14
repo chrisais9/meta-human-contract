@@ -131,7 +131,7 @@ describe('HoneyXBadger', function () {
 
       await mintTx.wait();
 
-      expect(await honeyXBadger.connect(addr1).ownerOf(0)).to.equal(addr1.address);
+      expect(await honeyXBadger.connect(addr1).ownerOf(1)).to.equal(addr1.address);
     });
 
     it('Should mint NFT to sender - multiple', async function () {
@@ -139,15 +139,14 @@ describe('HoneyXBadger', function () {
 
       await mintTx.wait();
 
-      expect(await honeyXBadger.connect(addr2).ownerOf(1)).to.equal(addr2.address);
-      expect(await honeyXBadger.connect(addr2).ownerOf(2)).to.equal(addr2.address);
-      expect(await honeyXBadger.connect(addr2).ownerOf(3)).to.equal(addr2.address);
-      expect(await honeyXBadger.connect(addr2).ownerOf(4)).to.equal(addr2.address);
+      [2, 3, 4, 5].forEach(async (index) => {
+        expect(await honeyXBadger.connect(addr2).ownerOf(index)).to.equal(addr2.address);
+      });
     });
 
     it('Should return the right tokenURI', async function () {
-      expect(await honeyXBadger.tokenURI(0)).to.equal(baseURI + '0.json');
       expect(await honeyXBadger.tokenURI(1)).to.equal(baseURI + '1.json');
+      expect(await honeyXBadger.tokenURI(2)).to.equal(baseURI + '2.json');
 
       await expect(honeyXBadger.tokenURI(99999)).to.be.revertedWith('ERC721Metadata: URI query for nonexistent token');
     });
@@ -181,10 +180,9 @@ describe('HoneyXBadger', function () {
 
       await mintTx.wait();
 
-      expect(await honeyXBadger.ownerOf(5)).to.equal(owner.address);
-      expect(await honeyXBadger.ownerOf(6)).to.equal(owner.address);
-      expect(await honeyXBadger.ownerOf(7)).to.equal(owner.address);
-      expect(await honeyXBadger.ownerOf(8)).to.equal(owner.address);
+      [6, 7, 8, 9].forEach(async (index) => {
+        expect(await honeyXBadger.ownerOf(index)).to.equal(owner.address);
+      });
     });
   });
 });
