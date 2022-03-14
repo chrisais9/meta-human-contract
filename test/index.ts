@@ -152,18 +152,6 @@ describe('HoneyXBadger', function () {
     });
   });
 
-  describe('Withdraw', async function () {
-    it('Should fail if sender is not owner', async function () {
-      await expect(honeyXBadger.connect(addr1).withdraw()).to.be.revertedWith('Ownable: caller is not the owner');
-    });
-
-    it('Should return the right balance of withdrawn', async function () {
-      const withdrawTx = await honeyXBadger.withdraw();
-
-      await expect(withdrawTx).to.changeEtherBalance(owner, ethers.utils.parseEther('0.5'));
-    });
-  });
-
   describe('Minting - Owner', function () {
     it('Should fail if sender is not owner', async function () {
       await expect(honeyXBadger.connect(addr1).reserveHoneyBadger(1)).to.be.revertedWith(
@@ -175,7 +163,7 @@ describe('HoneyXBadger', function () {
       await expect(honeyXBadger.reserveHoneyBadger(10000)).to.be.revertedWith('Purchase would exceed max supply');
     });
 
-    it('Should mint NFT to sender - multiple', async function () {
+    it('Should mint NFT to owner - multiple', async function () {
       const mintTx = await honeyXBadger.mintHoneyBadger(4, { value: ethers.utils.parseEther('0.4') });
 
       await mintTx.wait();
@@ -183,6 +171,28 @@ describe('HoneyXBadger', function () {
       [6, 7, 8, 9].forEach(async (index) => {
         expect(await honeyXBadger.ownerOf(index)).to.equal(owner.address);
       });
+    });
+  });
+
+  describe('Withdraw', async function () {
+    it('Should fail if sender is not owner', async function () {
+      await expect(honeyXBadger.connect(addr1).withdraw()).to.be.revertedWith('Ownable: caller is not the owner');
+    });
+
+    it('Should return the right balance of withdrawn', async function () {
+      const withdrawTx = await honeyXBadger.withdraw();
+
+      await expect(withdrawTx).to.changeEtherBalance(owner, ethers.utils.parseEther('0.9'));
+    });
+  });
+
+  describe('Total Supply', function () {
+    it('Should return the right supply', async function () {
+      const mintTx = await honeyXBadger.reserveHoneyBadger(9991);
+
+      await mintTx.wait();
+
+      expect(await honeyXBadger.totalSupply()).to.equal(await honeyXBadger.maxSupply());
     });
   });
 });
