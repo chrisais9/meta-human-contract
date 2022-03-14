@@ -145,10 +145,10 @@ describe('HoneyXBadger', function () {
     });
 
     it('Should return the right tokenURI', async function () {
-      expect(await honeyXBadger.tokenURI(1)).to.equal(baseURI + '1.json');
-      expect(await honeyXBadger.tokenURI(2)).to.equal(baseURI + '2.json');
+      expect(await honeyXBadger.tokenURI(1)).to.equal(baseURI + '1');
+      expect(await honeyXBadger.tokenURI(2)).to.equal(baseURI + '2');
 
-      await expect(honeyXBadger.tokenURI(99999)).to.be.revertedWith('ERC721Metadata: URI query for nonexistent token');
+      await expect(honeyXBadger.tokenURI(99999)).to.be.revertedWith('URIQueryForNonexistentToken()');
     });
   });
 

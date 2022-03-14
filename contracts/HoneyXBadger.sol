@@ -14,7 +14,7 @@ contract HoneyXBadger is ERC721A, Ownable{
 
     uint256 public immutable maxSupply;
 
-    string public baseURI;
+    string private _baseTokenURI;
 
     bool public isMintSaleActive = false;
     uint public maxMintAmount = 0;
@@ -38,7 +38,7 @@ contract HoneyXBadger is ERC721A, Ownable{
     /**
      * @notice Starting token index
      */
-    function _startTokenId() internal view virtual override returns (uint256) {
+    function _startTokenId() internal pure override returns (uint256) {
         return 1;
     }
 
@@ -81,24 +81,27 @@ contract HoneyXBadger is ERC721A, Ownable{
     }
 
     /**
+     * @notice get base uri for unit test
+     */
+    function baseURI() public view returns (string memory) {
+        return _baseTokenURI;
+    }
+
+
+    /**
+     * @notice base uri for internal usage
+     */
+    function _baseURI() internal view virtual override returns (string memory) {
+        return _baseTokenURI;
+    }
+
+    /**
      * @notice Allows the owner to set the base URI to be used for all token IDs
      * @param _uri: base URI
      * @dev Callable by owner
      */
     function setBaseURI(string memory _uri) external onlyOwner {
-        baseURI = _uri;
-    }
-
-    /**
-     * @notice Returns the Uniform Resource Identifier (URI) for a token ID
-     * @param tokenId: token ID
-     */
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
-
-        super.tokenURI(tokenId);
-
-        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString(), ".json")) : "";
+        _baseTokenURI = _uri;
     }
 
     /**
