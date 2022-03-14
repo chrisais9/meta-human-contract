@@ -7,6 +7,7 @@ import { HoneyXBadger } from '../typechain';
 
 describe('HoneyXBadger', function () {
   const baseURI = 'https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt/';
+  const placeholder = 'https://ipfs.io/ipfs/QmT31d9aS19gASPNVX3p9jN7mvEP1KxdLpqF8K5UbG8QNz';
 
   const maxMintAmount = 5;
   const tokenPrice = ethers.utils.parseEther('0.1');
@@ -17,16 +18,16 @@ describe('HoneyXBadger', function () {
   let addr2: SignerWithAddress;
   let addrs: SignerWithAddress[];
 
-  this.beforeAll(async function () {
-    const HoneyXBadgerContract = await ethers.getContractFactory('HoneyXBadger');
-
-    [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
-
-    honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
-    await honeyXBadger.deployed();
-  });
-
   describe('Deployment', function () {
+    this.beforeAll(async function () {
+      const HoneyXBadgerContract = await ethers.getContractFactory('HoneyXBadger');
+
+      [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+
+      honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
+      await honeyXBadger.deployed();
+    });
+
     it('Should set the right owner', async function () {
       expect(await honeyXBadger.owner()).to.equal(owner.address);
     });
@@ -42,6 +43,14 @@ describe('HoneyXBadger', function () {
   });
 
   describe('Base URI', function () {
+    this.beforeAll(async function () {
+      const HoneyXBadgerContract = await ethers.getContractFactory('HoneyXBadger');
+
+      [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+
+      honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
+      await honeyXBadger.deployed();
+    });
     it('Should fail if sender is not owner', async function () {
       await expect(honeyXBadger.connect(addr1).setBaseURI(baseURI)).to.be.revertedWith(
         'Ownable: caller is not the owner'
@@ -58,6 +67,14 @@ describe('HoneyXBadger', function () {
   });
 
   describe('Mint Sale Status', function () {
+    this.beforeAll(async function () {
+      const HoneyXBadgerContract = await ethers.getContractFactory('HoneyXBadger');
+
+      [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+
+      honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
+      await honeyXBadger.deployed();
+    });
     it('Should sale status false by default', async function () {
       expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
     });
@@ -94,6 +111,14 @@ describe('HoneyXBadger', function () {
   });
 
   describe('Minting', function () {
+    this.beforeAll(async function () {
+      const HoneyXBadgerContract = await ethers.getContractFactory('HoneyXBadger');
+
+      [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+
+      honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
+      await honeyXBadger.deployed();
+    });
     it('Should fail if mint sale is not started', async function () {
       await expect(honeyXBadger.mintHoneyBadger(1)).to.be.revertedWith('Mint is not active');
     });
@@ -144,7 +169,22 @@ describe('HoneyXBadger', function () {
       });
     });
 
-    it('Should return the right tokenURI', async function () {
+    it('Should return the placeholder if base uri not set', async function () {
+      expect(await honeyXBadger.tokenURI(1)).to.equal(placeholder);
+      expect(await honeyXBadger.tokenURI(2)).to.equal(placeholder);
+
+      await expect(honeyXBadger.tokenURI(99999)).to.be.revertedWith('URIQueryForNonexistentToken()');
+    });
+
+    it('Should set the right base uri', async function () {
+      const setBaseURITx = await honeyXBadger.setBaseURI(baseURI);
+
+      await setBaseURITx.wait();
+
+      expect(await honeyXBadger.baseURI()).to.equal(baseURI);
+    });
+
+    it('Should return the right base uri for each token', async function () {
       expect(await honeyXBadger.tokenURI(1)).to.equal(baseURI + '1');
       expect(await honeyXBadger.tokenURI(2)).to.equal(baseURI + '2');
 
@@ -153,28 +193,53 @@ describe('HoneyXBadger', function () {
   });
 
   describe('Minting - Owner', function () {
+    this.beforeAll(async function () {
+      const HoneyXBadgerContract = await ethers.getContractFactory('HoneyXBadger');
+
+      [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+
+      honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
+      await honeyXBadger.deployed();
+
+      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, tokenPrice);
+      await startMintSaleTx.wait();
+    });
     it('Should fail if sender is not owner', async function () {
       await expect(honeyXBadger.connect(addr1).reserveHoneyBadger(1)).to.be.revertedWith(
         'Ownable: caller is not the owner'
       );
     });
 
-    it('Should fail if mint amount exceed max supply', async function () {
-      await expect(honeyXBadger.reserveHoneyBadger(10000)).to.be.revertedWith('Purchase would exceed max supply');
-    });
-
-    it('Should mint NFT to owner - multiple', async function () {
-      const mintTx = await honeyXBadger.mintHoneyBadger(4, { value: ethers.utils.parseEther('0.4') });
+    it('Should mint NFT to owner', async function () {
+      const mintTx = await honeyXBadger.reserveHoneyBadger(10);
 
       await mintTx.wait();
 
-      [6, 7, 8, 9].forEach(async (index) => {
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(async (index) => {
         expect(await honeyXBadger.ownerOf(index)).to.equal(owner.address);
       });
+    });
+
+    it('Should fail if mint amount exceed max supply', async function () {
+      await expect(honeyXBadger.reserveHoneyBadger(9999)).to.be.revertedWith('Purchase would exceed max supply');
     });
   });
 
   describe('Withdraw', async function () {
+    this.beforeAll(async function () {
+      const HoneyXBadgerContract = await ethers.getContractFactory('HoneyXBadger');
+
+      [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+
+      honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
+      await honeyXBadger.deployed();
+
+      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, tokenPrice);
+      await startMintSaleTx.wait();
+
+      const reserveMintTx = await honeyXBadger.mintHoneyBadger(5, { value: ethers.utils.parseEther('0.5') });
+      await reserveMintTx.wait();
+    });
     it('Should fail if sender is not owner', async function () {
       await expect(honeyXBadger.connect(addr1).withdraw()).to.be.revertedWith('Ownable: caller is not the owner');
     });
@@ -182,17 +247,29 @@ describe('HoneyXBadger', function () {
     it('Should return the right balance of withdrawn', async function () {
       const withdrawTx = await honeyXBadger.withdraw();
 
-      await expect(withdrawTx).to.changeEtherBalance(owner, ethers.utils.parseEther('0.9'));
+      await expect(withdrawTx).to.changeEtherBalance(owner, ethers.utils.parseEther('0.5'));
     });
   });
 
   describe('Total Supply', function () {
+    const mintedAmount = 1000;
+
+    this.beforeAll(async function () {
+      const HoneyXBadgerContract = await ethers.getContractFactory('HoneyXBadger');
+
+      [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+
+      honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
+      await honeyXBadger.deployed();
+
+      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, tokenPrice);
+      await startMintSaleTx.wait();
+
+      const reserveMintTx = await honeyXBadger.reserveHoneyBadger(mintedAmount);
+      await reserveMintTx.wait();
+    });
     it('Should return the right supply', async function () {
-      const mintTx = await honeyXBadger.reserveHoneyBadger(9991);
-
-      await mintTx.wait();
-
-      expect(await honeyXBadger.totalSupply()).to.equal(await honeyXBadger.maxSupply());
+      expect(await honeyXBadger.totalSupply()).to.equal(mintedAmount);
     });
   });
 });

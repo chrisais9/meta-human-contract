@@ -13,12 +13,14 @@ contract HoneyXBadger is ERC721A, Ownable{
     using Strings for uint256;
 
     uint256 public immutable maxSupply;
-
-    string private _baseTokenURI;
-
-    bool public isMintSaleActive = false;
-    uint public maxMintAmount = 0;
     uint256 public tokenPrice = 0.1 ether; //0.1 ETH
+
+    string private placeholder = "https://ipfs.io/ipfs/QmT31d9aS19gASPNVX3p9jN7mvEP1KxdLpqF8K5UbG8QNz";
+    string private baseUri;
+    
+    uint public maxMintAmount = 0;
+    
+    bool public isMintSaleActive = false;
 
     /**
      * @notice Constructor
@@ -89,7 +91,7 @@ contract HoneyXBadger is ERC721A, Ownable{
      * @notice get base uri for unit test
      */
     function baseURI() public view returns (string memory) {
-        return _baseTokenURI;
+        return baseUri;
     }
 
 
@@ -97,7 +99,7 @@ contract HoneyXBadger is ERC721A, Ownable{
      * @notice base uri for internal usage
      */
     function _baseURI() internal view override(ERC721A) returns (string memory) {
-        return _baseTokenURI;
+        return baseUri;
     }
 
     /**
@@ -106,7 +108,14 @@ contract HoneyXBadger is ERC721A, Ownable{
      * @dev Callable by owner
      */
     function setBaseURI(string memory _uri) external onlyOwner {
-        _baseTokenURI = _uri;
+        baseUri = _uri;
+    }
+
+    function tokenURI(uint256 tokenId) public view virtual override(ERC721A) returns (string memory) {
+        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
+
+        string memory uri = _baseURI();
+        return bytes(uri).length != 0 ? string(abi.encodePacked(uri, tokenId.toString())) : placeholder;
     }
 
     /**
