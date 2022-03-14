@@ -29,7 +29,7 @@ jobs:
           body: |
             유닛테스트를 통과 하였습니다 ✅
             
-            - 결과확인: [${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            - 결과확인: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - name: Create commit comment fail
         if: ${{ steps.step_test.outcome != 'success' }}
         uses: peter-evans/commit-comment@v1
