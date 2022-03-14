@@ -51,6 +51,7 @@ describe('HoneyXBadger', function () {
       honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
       await honeyXBadger.deployed();
     });
+
     it('Should fail if sender is not owner', async function () {
       await expect(honeyXBadger.connect(addr1).setBaseURI(baseURI)).to.be.revertedWith(
         'Ownable: caller is not the owner'
@@ -75,6 +76,7 @@ describe('HoneyXBadger', function () {
       honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
       await honeyXBadger.deployed();
     });
+
     it('Should sale status false by default', async function () {
       expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
     });
@@ -119,6 +121,7 @@ describe('HoneyXBadger', function () {
       honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
       await honeyXBadger.deployed();
     });
+
     it('Should fail if mint sale is not started', async function () {
       await expect(honeyXBadger.mintHoneyBadger(1)).to.be.revertedWith('Mint is not active');
     });
@@ -176,15 +179,10 @@ describe('HoneyXBadger', function () {
       await expect(honeyXBadger.tokenURI(99999)).to.be.revertedWith('URIQueryForNonexistentToken()');
     });
 
-    it('Should set the right base uri', async function () {
+    it('Should return the right base uri for each token', async function () {
       const setBaseURITx = await honeyXBadger.setBaseURI(baseURI);
-
       await setBaseURITx.wait();
 
-      expect(await honeyXBadger.baseURI()).to.equal(baseURI);
-    });
-
-    it('Should return the right base uri for each token', async function () {
       expect(await honeyXBadger.tokenURI(1)).to.equal(baseURI + '1');
       expect(await honeyXBadger.tokenURI(2)).to.equal(baseURI + '2');
 
@@ -204,6 +202,7 @@ describe('HoneyXBadger', function () {
       const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, tokenPrice);
       await startMintSaleTx.wait();
     });
+
     it('Should fail if sender is not owner', async function () {
       await expect(honeyXBadger.connect(addr1).reserveHoneyBadger(1)).to.be.revertedWith(
         'Ownable: caller is not the owner'
@@ -240,6 +239,7 @@ describe('HoneyXBadger', function () {
       const reserveMintTx = await honeyXBadger.mintHoneyBadger(5, { value: ethers.utils.parseEther('0.5') });
       await reserveMintTx.wait();
     });
+
     it('Should fail if sender is not owner', async function () {
       await expect(honeyXBadger.connect(addr1).withdraw()).to.be.revertedWith('Ownable: caller is not the owner');
     });
@@ -268,6 +268,7 @@ describe('HoneyXBadger', function () {
       const reserveMintTx = await honeyXBadger.reserveHoneyBadger(mintedAmount);
       await reserveMintTx.wait();
     });
+
     it('Should return the right supply', async function () {
       expect(await honeyXBadger.totalSupply()).to.equal(mintedAmount);
     });
