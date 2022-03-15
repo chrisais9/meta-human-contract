@@ -15,7 +15,7 @@ contract HoneyXBadger is ERC721A, Ownable{
     uint256 public immutable maxSupply;
     uint256 public tokenPrice = 0.1 ether; //0.1 ETH
 
-    string private placeholder = "https://ipfs.io/ipfs/QmT31d9aS19gASPNVX3p9jN7mvEP1KxdLpqF8K5UbG8QNz";
+    string private placeholder = "https://ipfs.io/ipfs/QmQYTzPCpk7Hswtkzxck6f1eZhfHUEB9h892bMCFLeM2S7";
     string private baseUri;
     
     uint public maxMintAmount = 0;

@@ -7,7 +7,7 @@ import { HoneyXBadger } from '../typechain';
 
 describe('HoneyXBadger', function () {
   const baseURI = 'https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt/';
-  const placeholder = 'https://ipfs.io/ipfs/QmT31d9aS19gASPNVX3p9jN7mvEP1KxdLpqF8K5UbG8QNz';
+  const placeholder = 'https://ipfs.io/ipfs/QmQYTzPCpk7Hswtkzxck6f1eZhfHUEB9h892bMCFLeM2S7';
 
   const maxMintAmount = 5;
   const tokenPrice = ethers.utils.parseEther('0.1');
