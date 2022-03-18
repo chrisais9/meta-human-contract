@@ -1,5 +1,6 @@
 /* eslint-disable node/no-missing-import */
 /* eslint-disable no-unused-vars */
+import { BigNumber } from '@ethersproject/bignumber';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
@@ -10,7 +11,7 @@ describe('HoneyXBadger', function () {
   const placeholder = 'https://ipfs.io/ipfs/QmQYTzPCpk7Hswtkzxck6f1eZhfHUEB9h892bMCFLeM2S7';
 
   const maxMintAmount = 5;
-  const tokenPrice = ethers.utils.parseEther('0.1');
+  const tokenPrice = 0.1;
 
   let honeyXBadger: HoneyXBadger;
   let owner: SignerWithAddress;
@@ -82,13 +83,13 @@ describe('HoneyXBadger', function () {
     });
 
     it('Should fail if sender is not owner', async function () {
-      await expect(honeyXBadger.connect(addr1).startMintSale(maxMintAmount, tokenPrice)).to.be.revertedWith(
+      await expect(honeyXBadger.connect(addr1).startMintSale(maxMintAmount, parseEther(tokenPrice))).to.be.revertedWith(
         'Ownable: caller is not the owner'
       );
     });
 
     it('Should start mint sale', async function () {
-      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, tokenPrice);
+      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, parseEther(tokenPrice));
 
       await startMintSaleTx.wait();
 
@@ -100,7 +101,7 @@ describe('HoneyXBadger', function () {
     });
 
     it('Should set the right mint price', async function () {
-      expect(await honeyXBadger.tokenPrice()).to.equal(tokenPrice);
+      expect(await honeyXBadger.tokenPrice()).to.equal(parseEther(tokenPrice));
     });
 
     it('Should pause mint sale', async function () {
@@ -127,7 +128,7 @@ describe('HoneyXBadger', function () {
     });
 
     it('Should start mint sale', async function () {
-      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, tokenPrice);
+      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, parseEther(tokenPrice));
 
       await startMintSaleTx.wait();
 
@@ -138,24 +139,17 @@ describe('HoneyXBadger', function () {
       await expect(honeyXBadger.mintHoneyBadger(9999)).to.be.revertedWith('Too greedy');
     });
 
-    it('Should fail if insufficent ether value to mint - single', async function () {
+    it('Should fail if insufficent ether value to mint', async function () {
+      const amountToMint = 4;
       await expect(
-        honeyXBadger.mintHoneyBadger(1, {
-          value: ethers.utils.parseEther('0.001'),
-        })
-      ).to.be.revertedWith('Insufficent ether value');
-    });
-
-    it('Should fail if insufficent ether value to mint - multiple', async function () {
-      await expect(
-        honeyXBadger.mintHoneyBadger(4, {
-          value: ethers.utils.parseEther('0.1'),
+        honeyXBadger.mintHoneyBadger(amountToMint, {
+          value: tokenPrice * (amountToMint - 1),
         })
       ).to.be.revertedWith('Insufficent ether value');
     });
 
     it('Should mint NFT to sender - single', async function () {
-      const mintTx = await honeyXBadger.connect(addr1).mintHoneyBadger(1, { value: tokenPrice });
+      const mintTx = await honeyXBadger.connect(addr1).mintHoneyBadger(1, { value: parseEther(tokenPrice) });
 
       await mintTx.wait();
 
@@ -163,7 +157,7 @@ describe('HoneyXBadger', function () {
     });
 
     it('Should mint NFT to sender - multiple', async function () {
-      const mintTx = await honeyXBadger.connect(addr2).mintHoneyBadger(4, { value: ethers.utils.parseEther('0.4') });
+      const mintTx = await honeyXBadger.connect(addr2).mintHoneyBadger(4, { value: parseEther(tokenPrice * 4) });
 
       await mintTx.wait();
 
@@ -173,11 +167,11 @@ describe('HoneyXBadger', function () {
     });
 
     it('Should refund if sent ether value is bigger than price', async function () {
-      const mintTx = await honeyXBadger.connect(addr2).mintHoneyBadger(1, { value: ethers.utils.parseEther('0.15') });
+      const mintTx = await honeyXBadger.connect(addr2).mintHoneyBadger(1, { value: parseEther(tokenPrice + 0.5) });
 
       await mintTx.wait();
 
-      await expect(mintTx).to.changeEtherBalance(addr2, ethers.utils.parseEther('-0.1'));
+      await expect(mintTx).to.changeEtherBalance(addr2, parseEther(tokenPrice));
     });
 
     it('Should return the placeholder if base uri not set', async function () {
@@ -207,7 +201,7 @@ describe('HoneyXBadger', function () {
       honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
       await honeyXBadger.deployed();
 
-      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, tokenPrice);
+      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, parseEther(tokenPrice));
       await startMintSaleTx.wait();
     });
 
@@ -241,10 +235,10 @@ describe('HoneyXBadger', function () {
       honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
       await honeyXBadger.deployed();
 
-      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, tokenPrice);
+      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, parseEther(tokenPrice));
       await startMintSaleTx.wait();
 
-      const reserveMintTx = await honeyXBadger.mintHoneyBadger(5, { value: ethers.utils.parseEther('0.5') });
+      const reserveMintTx = await honeyXBadger.mintHoneyBadger(5, { value: parseEther(tokenPrice * 5) });
       await reserveMintTx.wait();
     });
 
@@ -255,7 +249,7 @@ describe('HoneyXBadger', function () {
     it('Should return the right balance of withdrawn', async function () {
       const withdrawTx = await honeyXBadger.withdraw();
 
-      await expect(withdrawTx).to.changeEtherBalance(owner, ethers.utils.parseEther('0.5'));
+      await expect(withdrawTx).to.changeEtherBalance(owner, parseEther(tokenPrice * 5));
     });
   });
 
@@ -270,7 +264,7 @@ describe('HoneyXBadger', function () {
       honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
       await honeyXBadger.deployed();
 
-      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, tokenPrice);
+      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, parseEther(tokenPrice));
       await startMintSaleTx.wait();
 
       const reserveMintTx = await honeyXBadger.reserveHoneyBadger(mintedAmount);
@@ -282,3 +276,7 @@ describe('HoneyXBadger', function () {
     });
   });
 });
+
+function parseEther(ether: number): BigNumber {
+  return ethers.utils.parseUnits(ether.toString(), 18);
+}
