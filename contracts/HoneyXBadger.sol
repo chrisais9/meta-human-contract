@@ -75,6 +75,7 @@ contract HoneyXBadger is ERC721A, Ownable{
         require(tokenPrice * mintAmount <= msg.value, "Insufficent ether value");
         
         _safeMint(msg.sender, mintAmount);
+        refundIfOver(tokenPrice * mintAmount);
     }
 
     /**
@@ -116,6 +117,17 @@ contract HoneyXBadger is ERC721A, Ownable{
 
         string memory uri = _baseURI();
         return bytes(uri).length != 0 ? string(abi.encodePacked(uri, tokenId.toString())) : placeholder;
+    }
+
+    /**
+     * @notice refund if recieved ETH value is bigger than totalPrice
+     * @param totalPrice: total price
+     * @dev Callable by owner
+     */
+    function refundIfOver(uint256 totalPrice) private {
+        if (msg.value > totalPrice) {
+            payable(msg.sender).transfer(msg.value - totalPrice);
+        }
     }
 
     /**

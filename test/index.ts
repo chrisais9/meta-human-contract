@@ -155,7 +155,7 @@ describe('HoneyXBadger', function () {
     });
 
     it('Should mint NFT to sender - single', async function () {
-      const mintTx = await honeyXBadger.connect(addr1).mintHoneyBadger(1, { value: ethers.utils.parseEther('0.1') });
+      const mintTx = await honeyXBadger.connect(addr1).mintHoneyBadger(1, { value: tokenPrice });
 
       await mintTx.wait();
 
@@ -170,6 +170,14 @@ describe('HoneyXBadger', function () {
       [2, 3, 4, 5].forEach(async (index) => {
         expect(await honeyXBadger.connect(addr2).ownerOf(index)).to.equal(addr2.address);
       });
+    });
+
+    it('Should refund if sent ether value is bigger than price', async function () {
+      const mintTx = await honeyXBadger.connect(addr2).mintHoneyBadger(1, { value: ethers.utils.parseEther('0.15') });
+
+      await mintTx.wait();
+
+      await expect(mintTx).to.changeEtherBalance(addr2, ethers.utils.parseEther('-0.1'));
     });
 
     it('Should return the placeholder if base uri not set', async function () {
