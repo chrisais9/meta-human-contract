@@ -1,5 +1,6 @@
 /* eslint-disable node/no-missing-import */
 /* eslint-disable no-unused-vars */
+// eslint-disable-next-line node/no-extraneous-import
 import { BigNumber } from '@ethersproject/bignumber';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
@@ -143,7 +144,7 @@ describe('HoneyXBadger', function () {
       const amountToMint = 4;
       await expect(
         honeyXBadger.mintHoneyBadger(amountToMint, {
-          value: tokenPrice * (amountToMint - 1),
+          value: parseEther(tokenPrice * (amountToMint - 1)),
         })
       ).to.be.revertedWith('Insufficent ether value');
     });
@@ -171,7 +172,7 @@ describe('HoneyXBadger', function () {
 
       await mintTx.wait();
 
-      await expect(mintTx).to.changeEtherBalance(addr2, parseEther(tokenPrice));
+      await expect(mintTx).to.changeEtherBalance(addr2, parseEther(-tokenPrice));
     });
 
     it('Should return the placeholder if base uri not set', async function () {
