@@ -21,6 +21,7 @@ contract HoneyXBadger is ERC721A, Ownable{
     uint public maxMintAmount = 0;
     
     bool public isMintSaleActive = false;
+    bool private isLocked = false;
 
     /**
      * @notice Constructor
@@ -35,6 +36,13 @@ contract HoneyXBadger is ERC721A, Ownable{
     ) ERC721A(_name, _symbol) {
         require((_maxSupply == 100) || (_maxSupply == 1000) || (_maxSupply == 10000), "Operations: Wrong max supply");
         maxSupply = _maxSupply;
+    }
+
+    /**
+     * @notice Lock contract and make immutable
+     */
+    function lockContract() external onlyOwner {
+        isLocked = true;
     }
 
     /**
@@ -109,6 +117,7 @@ contract HoneyXBadger is ERC721A, Ownable{
      * @dev Callable by owner
      */
     function setBaseURI(string memory _uri) external onlyOwner {
+        require(!isLocked, "Contract is locked");
         baseUri = _uri;
     }
 

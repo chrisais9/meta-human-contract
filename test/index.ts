@@ -67,6 +67,13 @@ describe('HoneyXBadger', function () {
 
       expect(await honeyXBadger.baseURI()).to.equal(baseURI);
     });
+
+    it('Should revert if contract is locked', async function () {
+      const lockTx = await honeyXBadger.lockContract();
+      await lockTx.wait();
+
+      await expect(honeyXBadger.setBaseURI(baseURI)).to.be.revertedWith('Contract is locked');
+    });
   });
 
   describe('Mint Sale Status', function () {
