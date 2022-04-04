@@ -4,8 +4,28 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
+import { keccak256 } from 'ethers/lib/utils';
 import { ethers } from 'hardhat';
+import MerkleTree from 'merkletreejs';
 import { HoneyXBadger } from '../typechain';
+
+function getMerkleRoot(whitelistSigners: SignerWithAddress[]): string {
+  const whitelistAddress = whitelistSigners.map((addr) => addr.address);
+  const leafNodes = whitelistAddress.map((addr) => keccak256(addr));
+
+  const merkletree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
+
+  return merkletree.getHexRoot();
+}
+
+function getMerkleProof(whitelistSigners: SignerWithAddress[], address: string): string[] {
+  const whitelistAddress = whitelistSigners.map((addr) => addr.address);
+  const leafNodes = whitelistAddress.map((addr) => keccak256(addr));
+
+  const merkletree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
+
+  return merkletree.getHexProof(keccak256(address));
+}
 
 describe('HoneyXBadger', function () {
   const baseURI = 'https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt/';
@@ -18,13 +38,14 @@ describe('HoneyXBadger', function () {
   let owner: SignerWithAddress;
   let addr1: SignerWithAddress;
   let addr2: SignerWithAddress;
+  let whitelistAddr: SignerWithAddress;
   let addrs: SignerWithAddress[];
 
   describe('Deployment', function () {
     this.beforeAll(async function () {
       const HoneyXBadgerContract = await ethers.getContractFactory('HoneyXBadger');
 
-      [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+      [owner, addr1, addr2, whitelistAddr, ...addrs] = await ethers.getSigners();
 
       honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
       await honeyXBadger.deployed();
@@ -97,7 +118,9 @@ describe('HoneyXBadger', function () {
       ).to.be.revertedWith('Ownable: caller is not the owner');
 
       await expect(
-        honeyXBadger.connect(addr1).startWhitelistMint(maxMintAmount, parseEther(tokenPrice))
+        honeyXBadger
+          .connect(addr1)
+          .startWhitelistMint(maxMintAmount, parseEther(tokenPrice), getMerkleRoot([addr1, addr2, whitelistAddr]))
       ).to.be.revertedWith('Ownable: caller is not the owner');
     });
 
@@ -112,7 +135,11 @@ describe('HoneyXBadger', function () {
     });
 
     it('Should start mint sale and set configs correctly - Whitelist', async function () {
-      const startMintSaleTx = await honeyXBadger.startWhitelistMint(maxMintAmount, parseEther(tokenPrice));
+      const startMintSaleTx = await honeyXBadger.startWhitelistMint(
+        maxMintAmount,
+        parseEther(tokenPrice),
+        getMerkleRoot([addr1, addr2])
+      );
       await startMintSaleTx.wait();
 
       expect(await honeyXBadger.isWhitelistMintActive()).to.equal(true);
@@ -152,12 +179,23 @@ describe('HoneyXBadger', function () {
       await expect(honeyXBadger.mintHoneyBadger(1)).to.be.revertedWith('Mint is not active');
     });
 
-    it('Should start mint sale', async function () {
+    it('Should start mint sale - Public', async function () {
       const startMintSaleTx = await honeyXBadger.startPublicMint(maxMintAmount, parseEther(tokenPrice));
 
       await startMintSaleTx.wait();
 
       expect(await honeyXBadger.isPublicMintActive()).to.equal(true);
+    });
+
+    it('Should start mint sale - Whitelist', async function () {
+      const startMintSaleTx = await honeyXBadger.startWhitelistMint(
+        maxMintAmount,
+        parseEther(tokenPrice),
+        getMerkleRoot([addr1, addr2, whitelistAddr])
+      );
+      await startMintSaleTx.wait();
+
+      expect(await honeyXBadger.isWhitelistMintActive()).to.equal(true);
     });
 
     it('Should fail mint amount is Bigger than max', async function () {
@@ -173,7 +211,7 @@ describe('HoneyXBadger', function () {
       ).to.be.revertedWith('Insufficent ether value');
     });
 
-    it('Should mint NFT to sender - single', async function () {
+    it('Should mint NFT to sender - Public(single)', async function () {
       const mintTx = await honeyXBadger.connect(addr1).mintHoneyBadger(1, { value: parseEther(tokenPrice) });
 
       await mintTx.wait();
@@ -181,7 +219,7 @@ describe('HoneyXBadger', function () {
       expect(await honeyXBadger.connect(addr1).ownerOf(1)).to.equal(addr1.address);
     });
 
-    it('Should mint NFT to sender - multiple', async function () {
+    it('Should mint NFT to sender - Public(multiple)', async function () {
       const mintTx = await honeyXBadger.connect(addr2).mintHoneyBadger(4, { value: parseEther(tokenPrice * 4) });
 
       await mintTx.wait();
@@ -197,6 +235,30 @@ describe('HoneyXBadger', function () {
       await mintTx.wait();
 
       await expect(mintTx).to.changeEtherBalance(addr2, parseEther(-tokenPrice));
+    });
+
+    it('Should mint NFT to sender - Whitelist(single)', async function () {
+      const mintTx = await honeyXBadger
+        .connect(whitelistAddr)
+        .mintWhitelistHoneyBadger(getMerkleProof([addr1, addr2, whitelistAddr], whitelistAddr.address), 1, {
+          value: parseEther(tokenPrice),
+        });
+
+      await mintTx.wait();
+
+      expect(await honeyXBadger.connect(whitelistAddr).ownerOf(await honeyXBadger.totalSupply())).to.equal(
+        whitelistAddr.address
+      );
+    });
+
+    it('Should not mint NFT if claimed already- Whitelist(single)', async function () {
+      await expect(
+        honeyXBadger
+          .connect(whitelistAddr)
+          .mintWhitelistHoneyBadger(getMerkleProof([addr1, addr2, whitelistAddr], whitelistAddr.address), 1, {
+            value: parseEther(tokenPrice),
+          })
+      ).to.be.revertedWith('already claimed');
     });
 
     it('Should return the placeholder if base uri not set', async function () {
