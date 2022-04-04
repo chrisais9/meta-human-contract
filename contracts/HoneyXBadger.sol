@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "erc721a/contracts/ERC721A.sol";
 
 contract HoneyXBadger is ERC721A, Ownable{
@@ -15,12 +16,17 @@ contract HoneyXBadger is ERC721A, Ownable{
     uint256 public immutable maxSupply;
     uint256 public tokenPrice = 0.1 ether; //0.1 ETH
 
+
+    mapping(address => bool) public claimed;
+
     string private placeholder = "https://ipfs.io/ipfs/QmQYTzPCpk7Hswtkzxck6f1eZhfHUEB9h892bMCFLeM2S7";
     string private baseUri;
+    bytes32 private merkleRoot;
     
     uint public maxMintAmount = 0;
     
-    bool public isMintSaleActive = false;
+    bool public isWhitelistMintActive = false;
+    bool public isPublicMintActive = false;
     bool private isLocked = false;
 
     /**
@@ -53,23 +59,71 @@ contract HoneyXBadger is ERC721A, Ownable{
     }
 
     /**
-    * @notice Start mint availability
+    * @notice Start public mint availability
     * @param _maxMintAmount Max amout to Mint
     * @param _tokenPrice Mint Price
     * @dev Callable by owner
     */
-    function startMintSale(uint _maxMintAmount, uint256 _tokenPrice) external onlyOwner {
-        isMintSaleActive = true;
+    function startPublicMint(uint _maxMintAmount, uint256 _tokenPrice) external onlyOwner {
+        isPublicMintActive = true;
         maxMintAmount = _maxMintAmount;
         tokenPrice = _tokenPrice;
     }
 
     /**
-    * @notice Pause mint availability
+    * @notice Start whitelist mint availability
+    * @param _maxMintAmount Max amout to Mint
+    * @param _tokenPrice Mint Price
     * @dev Callable by owner
     */
-    function pauseMintSale() external onlyOwner {
-        isMintSaleActive = false;
+    function startWhitelistMint(uint _maxMintAmount, uint _tokenPrice) external onlyOwner {
+        isWhitelistMintActive = true;
+        maxMintAmount = _maxMintAmount;
+        tokenPrice = _tokenPrice;
+    }
+
+    /**
+    * @notice Pause public mint availability
+    * @dev Callable by owner
+    */
+    function pauseWhitelistMint() external onlyOwner {
+        isWhitelistMintActive = false;
+    }
+
+    /**
+    * @notice Pause whitelist mint availability
+    * @dev Callable by owner
+    */
+    function pausePublicMint() external onlyOwner {
+        isPublicMintActive = false;
+    }
+
+    /**
+     * @notice check if desired adress is whitelisted
+     * @param merkleProof: merkle proof of sender address
+     */
+    function isWhitelisted(bytes32[] calldata merkleProof) public view returns(bool) {
+        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+        return MerkleProof.verify(merkleProof, merkleRoot, leaf);
+    }
+
+    /**
+     * @notice Allows user to mint a token to a specific address if whitelisted
+     * @param merkleProof: merkle proof of sender address
+     * @param mintAmount: amount to mint token
+     */
+    function mintWhitelistHoneyBadger(bytes32[] calldata merkleProof, uint mintAmount) public payable {
+        require(isWhitelistMintActive, "Mint is not active");
+        require(mintAmount <= maxMintAmount, "Too greedy");
+        require(totalSupply() + mintAmount <= maxSupply, "Purchase would exceed max supply");
+        require(tokenPrice * mintAmount <= msg.value, "Insufficent ether value");
+        require(isWhitelisted(merkleProof), "not whitelisted");
+        require(claimed[msg.sender] == false, "already claimed");
+
+        _safeMint(msg.sender, mintAmount);
+        refundIfOver(tokenPrice * mintAmount);
+
+        claimed[msg.sender] = true;
     }
 
     /**
@@ -77,7 +131,7 @@ contract HoneyXBadger is ERC721A, Ownable{
      * @param mintAmount: amount to mint token
      */
     function mintHoneyBadger(uint mintAmount) public payable {
-        require(isMintSaleActive, "Mint is not active");
+        require(isPublicMintActive, "Mint is not active");
         require(mintAmount <= maxMintAmount, "Too greedy");
         require(totalSupply() + mintAmount <= maxSupply, "Purchase would exceed max supply");
         require(tokenPrice * mintAmount <= msg.value, "Insufficent ether value");
