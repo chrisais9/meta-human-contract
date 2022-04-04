@@ -200,6 +200,12 @@ describe('HoneyXBadger', function () {
       expect(await honeyXBadger.isWhitelistMintActive()).to.equal(true);
     });
 
+    it('Should fail address is not whitelisted', async function () {
+      await expect(
+        honeyXBadger.mintWhitelistHoneyBadger(getMerkleProof(addr1.address), 1, { value: parseEther(tokenPrice) })
+      ).to.be.revertedWith('not whitelisted');
+    });
+
     it('Should fail mint amount is Bigger than max', async function () {
       await expect(honeyXBadger.mintHoneyBadger(9999)).to.be.revertedWith('Too greedy');
     });
