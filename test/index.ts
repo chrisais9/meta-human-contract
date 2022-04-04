@@ -87,37 +87,54 @@ describe('HoneyXBadger', function () {
     });
 
     it('Should sale status false by default', async function () {
-      expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
+      expect(await honeyXBadger.isPublicMintActive()).to.equal(false);
+      expect(await honeyXBadger.isWhitelistMintActive()).to.equal(false);
     });
 
     it('Should fail if sender is not owner', async function () {
-      await expect(honeyXBadger.connect(addr1).startMintSale(maxMintAmount, parseEther(tokenPrice))).to.be.revertedWith(
-        'Ownable: caller is not the owner'
-      );
+      await expect(
+        honeyXBadger.connect(addr1).startPublicMint(maxMintAmount, parseEther(tokenPrice))
+      ).to.be.revertedWith('Ownable: caller is not the owner');
+
+      await expect(
+        honeyXBadger.connect(addr1).startWhitelistMint(maxMintAmount, parseEther(tokenPrice))
+      ).to.be.revertedWith('Ownable: caller is not the owner');
     });
 
-    it('Should start mint sale', async function () {
-      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, parseEther(tokenPrice));
-
+    it('Should start mint sale and set configs correctly - Public', async function () {
+      const startMintSaleTx = await honeyXBadger.startPublicMint(maxMintAmount, parseEther(tokenPrice));
       await startMintSaleTx.wait();
 
-      expect(await honeyXBadger.isMintSaleActive()).to.equal(true);
-    });
+      expect(await honeyXBadger.isPublicMintActive()).to.equal(true);
 
-    it('Should set the right max mint amount', async function () {
       expect(await honeyXBadger.maxMintAmount()).to.equal(maxMintAmount);
-    });
-
-    it('Should set the right mint price', async function () {
       expect(await honeyXBadger.tokenPrice()).to.equal(parseEther(tokenPrice));
     });
 
-    it('Should pause mint sale', async function () {
-      const startMintSaleTx = await honeyXBadger.pauseMintSale();
+    it('Should start mint sale and set configs correctly - Whitelist', async function () {
+      const startMintSaleTx = await honeyXBadger.startWhitelistMint(maxMintAmount, parseEther(tokenPrice));
+      await startMintSaleTx.wait();
+
+      expect(await honeyXBadger.isWhitelistMintActive()).to.equal(true);
+
+      expect(await honeyXBadger.maxMintAmount()).to.equal(maxMintAmount);
+      expect(await honeyXBadger.tokenPrice()).to.equal(parseEther(tokenPrice));
+    });
+
+    it('Should pause mint sale - Public', async function () {
+      const startMintSaleTx = await honeyXBadger.pausePublicMint();
 
       await startMintSaleTx.wait();
 
-      expect(await honeyXBadger.isMintSaleActive()).to.equal(false);
+      expect(await honeyXBadger.isPublicMintActive()).to.equal(false);
+    });
+
+    it('Should pause mint sale - Whitelist', async function () {
+      const startMintSaleTx = await honeyXBadger.pauseWhitelistMint();
+
+      await startMintSaleTx.wait();
+
+      expect(await honeyXBadger.isWhitelistMintActive()).to.equal(false);
     });
   });
 
@@ -136,11 +153,11 @@ describe('HoneyXBadger', function () {
     });
 
     it('Should start mint sale', async function () {
-      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, parseEther(tokenPrice));
+      const startMintSaleTx = await honeyXBadger.startPublicMint(maxMintAmount, parseEther(tokenPrice));
 
       await startMintSaleTx.wait();
 
-      expect(await honeyXBadger.isMintSaleActive()).to.equal(true);
+      expect(await honeyXBadger.isPublicMintActive()).to.equal(true);
     });
 
     it('Should fail mint amount is Bigger than max', async function () {
@@ -208,9 +225,6 @@ describe('HoneyXBadger', function () {
 
       honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
       await honeyXBadger.deployed();
-
-      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, parseEther(tokenPrice));
-      await startMintSaleTx.wait();
     });
 
     it('Should fail if sender is not owner', async function () {
@@ -243,7 +257,7 @@ describe('HoneyXBadger', function () {
       honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
       await honeyXBadger.deployed();
 
-      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, parseEther(tokenPrice));
+      const startMintSaleTx = await honeyXBadger.startPublicMint(maxMintAmount, parseEther(tokenPrice));
       await startMintSaleTx.wait();
 
       const reserveMintTx = await honeyXBadger.mintHoneyBadger(5, { value: parseEther(tokenPrice * 5) });
@@ -272,7 +286,7 @@ describe('HoneyXBadger', function () {
       honeyXBadger = await HoneyXBadgerContract.deploy('HoneyXBadger', 'HXB', 10000);
       await honeyXBadger.deployed();
 
-      const startMintSaleTx = await honeyXBadger.startMintSale(maxMintAmount, parseEther(tokenPrice));
+      const startMintSaleTx = await honeyXBadger.startPublicMint(maxMintAmount, parseEther(tokenPrice));
       await startMintSaleTx.wait();
 
       const reserveMintTx = await honeyXBadger.reserveHoneyBadger(mintedAmount);
