@@ -1,5 +1,5 @@
 {
-  "name": "hardhat-project",
+  "name": "llhb-contract",
   "scripts": {
     "test": "hardhat test",
     "generate": "hardhat typechain"
