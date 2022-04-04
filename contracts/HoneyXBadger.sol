@@ -76,10 +76,11 @@ contract HoneyXBadger is ERC721A, Ownable{
     * @param _tokenPrice Mint Price
     * @dev Callable by owner
     */
-    function startWhitelistMint(uint _maxMintAmount, uint _tokenPrice) external onlyOwner {
+    function startWhitelistMint(uint _maxMintAmount, uint _tokenPrice, bytes32 _merkleRoot) external onlyOwner {
         isWhitelistMintActive = true;
         maxMintAmount = _maxMintAmount;
         tokenPrice = _tokenPrice;
+        merkleRoot = _merkleRoot;
     }
 
     /**
