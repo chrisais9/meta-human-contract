@@ -17,7 +17,7 @@ describe("MetaHuman", function () {
   const baseURI =
     "https://ipfs.io/ipfs/QmXFepCgTVs4Yyo9J43bdgXrtGGxWnT3Jt6KDKxN4xEnzt/";
   const placeholder =
-    "https://ipfs.io/ipfs/QmQYTzPCpk7Hswtkzxck6f1eZhfHUEB9h892bMCFLeM2S7";
+    "https://ipfs.io/ipfs/Qme42XjH7tBpvqyCqQFoa6UmbXehnRbwk5NDVATCSVQvf3";
 
   const maxMintAmount = 5;
   const tokenPrice = 0.1;
