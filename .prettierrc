@@ -1,13 +1,15 @@
 {
-    "singleQuote": true,
-    "printWidth": 120,
-    "overrides": [
-      {
-        "files": "*.sol",
-        "options": {
-          "printWidth": 120,
-          "explicitTypes": "always"
-        }
+  "overrides": [
+    {
+      "files": "*.sol, *.ts",
+      "options": {
+        "printWidth": 80,
+        "tabWidth": 4,
+        "useTabs": true,
+        "singleQuote": true,
+        "bracketSpacing": true,
+        "explicitTypes": "always"
       }
-    ]
-  }
+    }
+  ]
+}

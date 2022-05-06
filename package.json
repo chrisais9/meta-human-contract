@@ -1,5 +1,5 @@
 {
-  "name": "llhb-contract",
+  "name": "meta-human-contract",
   "scripts": {
     "test": "hardhat test",
     "generate": "hardhat typechain"
@@ -29,6 +29,7 @@
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.5.4",
     "hardhat": "^2.8.4",
+    "hardhat-abi-exporter": "^2.8.0",
     "hardhat-gas-reporter": "^1.0.8",
     "merkletreejs": "^0.2.31",
     "prettier": "^2.5.1",
