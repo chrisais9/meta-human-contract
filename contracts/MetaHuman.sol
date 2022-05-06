@@ -19,7 +19,7 @@ contract MetaHuman is ERC721A, Ownable {
     mapping(address => bool) public claimed;
 
     string private placeholder =
-        "https://ipfs.io/ipfs/QmQYTzPCpk7Hswtkzxck6f1eZhfHUEB9h892bMCFLeM2S7";
+        "https://ipfs.io/ipfs/Qme42XjH7tBpvqyCqQFoa6UmbXehnRbwk5NDVATCSVQvf3";
     string private baseUri;
     bytes32 private merkleRoot;
 
