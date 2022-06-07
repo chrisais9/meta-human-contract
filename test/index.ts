@@ -159,8 +159,10 @@ describe("MetaHuman", function () {
 
       expect(await metaHuman.isPublicMintActive()).to.equal(true);
 
-      expect(await metaHuman.maxMintAmount()).to.equal(maxMintAmount);
-      expect(await metaHuman.tokenPrice()).to.equal(parseEther(tokenPrice));
+      expect(await metaHuman.maxPublicMintAmount()).to.equal(maxMintAmount);
+      expect(await metaHuman.tokenPublicPrice()).to.equal(
+        parseEther(tokenPrice)
+      );
     });
 
     it("Should start mint sale and set configs correctly - Whitelist", async function () {
@@ -174,8 +176,10 @@ describe("MetaHuman", function () {
 
       expect(await metaHuman.isWhitelistMintActive()).to.equal(true);
 
-      expect(await metaHuman.maxMintAmount()).to.equal(maxMintAmount);
-      expect(await metaHuman.tokenPrice()).to.equal(parseEther(tokenPrice));
+      expect(await metaHuman.maxWhitelistMintAmount()).to.equal(maxMintAmount);
+      expect(await metaHuman.tokenPublicPrice()).to.equal(
+        parseEther(tokenPrice)
+      );
     });
 
     it("Should pause mint sale - Public", async function () {
