@@ -23,6 +23,7 @@ contract MetaHuman is ERC721A, Ownable {
     string private placeholder =
         "https://ipfs.io/ipfs/Qme42XjH7tBpvqyCqQFoa6UmbXehnRbwk5NDVATCSVQvf3";
     string private baseUri;
+    string private contractUri;
     bytes32 private merkleRoot;
 
     uint256 public maxPublicMintAmount = 0;
@@ -214,6 +215,9 @@ contract MetaHuman is ERC721A, Ownable {
         baseUri = _uri;
     }
 
+    /**
+     * @notice token URI for each token. returns placeholder if base URI is not set
+     */
     function tokenURI(uint256 tokenId)
         public
         view
@@ -228,6 +232,23 @@ contract MetaHuman is ERC721A, Ownable {
             bytes(uri).length != 0
                 ? string(abi.encodePacked(uri, tokenId.toString()))
                 : placeholder;
+    }
+
+    /**
+     * @notice Allows the owner to set the contract URI
+     * @param _uri: contract URI
+     * @dev Callable by owner
+     */
+    function setContractURI(string memory _uri) external onlyOwner {
+        contractUri = _uri;
+    }
+
+    /**
+     * @notice Contract level URI for Opensea
+     * see https://docs.opensea.io/docs/contract-level-metadata
+     */
+    function contractURI() public view returns (string memory) {
+        return contractUri;
     }
 
     /**
