@@ -113,15 +113,6 @@ describe("MetaHuman", function () {
 
       expect(await metaHuman.baseURI()).to.equal(baseURI);
     });
-
-    it("Should revert if contract is locked", async function () {
-      const lockTx = await metaHuman.lockContract();
-      await lockTx.wait();
-
-      await expect(metaHuman.setBaseURI(baseURI)).to.be.revertedWith(
-        "Contract is locked"
-      );
-    });
   });
 
   describe("Mint Sale Status", function () {

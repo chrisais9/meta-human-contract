@@ -14,7 +14,9 @@ contract MetaHuman is ERC721A, Ownable {
     using Strings for uint256;
 
     uint256 public immutable maxSupply;
-    uint256 public tokenPrice = 0.1 ether; //0.1 ETH
+
+    uint256 public tokenPublicPrice = 0.1 ether; //0.1 ETH
+    uint256 public tokenWhitelistPrice = 0.1 ether; //0.1 ETH
 
     mapping(address => bool) public claimed;
 
@@ -23,11 +25,11 @@ contract MetaHuman is ERC721A, Ownable {
     string private baseUri;
     bytes32 private merkleRoot;
 
-    uint256 public maxMintAmount = 0;
+    uint256 public maxPublicMintAmount = 0;
+    uint256 public maxWhitelistMintAmount = 0;
 
     bool public isWhitelistMintActive = false;
     bool public isPublicMintActive = false;
-    bool private isLocked = false;
 
     /**
      * @notice Constructor
@@ -47,13 +49,6 @@ contract MetaHuman is ERC721A, Ownable {
             "Operations: Wrong max supply"
         );
         maxSupply = _maxSupply;
-    }
-
-    /**
-     * @notice Lock contract and make immutable
-     */
-    function lockContract() external onlyOwner {
-        isLocked = true;
     }
 
     /**
@@ -80,8 +75,8 @@ contract MetaHuman is ERC721A, Ownable {
         onlyOwner
     {
         isPublicMintActive = true;
-        maxMintAmount = _maxMintAmount;
-        tokenPrice = _tokenPrice;
+        maxPublicMintAmount = _maxMintAmount;
+        tokenPublicPrice = _tokenPrice;
     }
 
     /**
@@ -96,8 +91,8 @@ contract MetaHuman is ERC721A, Ownable {
         bytes32 _merkleRoot
     ) external onlyOwner {
         isWhitelistMintActive = true;
-        maxMintAmount = _maxMintAmount;
-        tokenPrice = _tokenPrice;
+        maxWhitelistMintAmount = _maxMintAmount;
+        tokenWhitelistPrice = _tokenPrice;
         merkleRoot = _merkleRoot;
     }
 
@@ -140,20 +135,20 @@ contract MetaHuman is ERC721A, Ownable {
         uint256 mintAmount
     ) public payable {
         require(isWhitelistMintActive, "Mint is not active");
-        require(mintAmount <= maxMintAmount, "Too greedy");
+        require(mintAmount <= maxWhitelistMintAmount, "Too greedy");
         require(
             totalSupply() + mintAmount <= maxSupply,
             "Purchase would exceed max supply"
         );
         require(
-            tokenPrice * mintAmount <= msg.value,
+            tokenWhitelistPrice * mintAmount <= msg.value,
             "Insufficent ether value"
         );
         require(isWhitelisted(merkleProof), "not whitelisted");
         require(claimed[msg.sender] == false, "already claimed");
 
         _safeMint(msg.sender, mintAmount);
-        refundIfOver(tokenPrice * mintAmount);
+        refundIfOver(tokenWhitelistPrice * mintAmount);
 
         claimed[msg.sender] = true;
     }
@@ -164,18 +159,18 @@ contract MetaHuman is ERC721A, Ownable {
      */
     function mintMetaHuman(uint256 mintAmount) public payable {
         require(isPublicMintActive, "Mint is not active");
-        require(mintAmount <= maxMintAmount, "Too greedy");
+        require(mintAmount <= maxPublicMintAmount, "Too greedy");
         require(
             totalSupply() + mintAmount <= maxSupply,
             "Purchase would exceed max supply"
         );
         require(
-            tokenPrice * mintAmount <= msg.value,
+            tokenPublicPrice * mintAmount <= msg.value,
             "Insufficent ether value"
         );
 
         _safeMint(msg.sender, mintAmount);
-        refundIfOver(tokenPrice * mintAmount);
+        refundIfOver(tokenPublicPrice * mintAmount);
     }
 
     /**
@@ -216,7 +211,6 @@ contract MetaHuman is ERC721A, Ownable {
      * @dev Callable by owner
      */
     function setBaseURI(string memory _uri) external onlyOwner {
-        require(!isLocked, "Contract is locked");
         baseUri = _uri;
     }
 
