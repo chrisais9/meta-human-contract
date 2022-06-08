@@ -20,7 +20,7 @@ contract MetaHuman is ERC721A, Ownable {
 
     mapping(address => bool) public claimed;
 
-    string private placeholder =
+    string public constant PLACEHOLDER =
         "https://ipfs.io/ipfs/Qme42XjH7tBpvqyCqQFoa6UmbXehnRbwk5NDVATCSVQvf3";
     string private baseUri;
     string private contractUri;
@@ -216,7 +216,7 @@ contract MetaHuman is ERC721A, Ownable {
     }
 
     /**
-     * @notice token URI for each token. returns placeholder if base URI is not set
+     * @notice token URI for each token. returns PLACEHOLDER if base URI is not set
      */
     function tokenURI(uint256 tokenId)
         public
@@ -231,7 +231,7 @@ contract MetaHuman is ERC721A, Ownable {
         return
             bytes(uri).length != 0
                 ? string(abi.encodePacked(uri, tokenId.toString()))
-                : placeholder;
+                : PLACEHOLDER;
     }
 
     /**
