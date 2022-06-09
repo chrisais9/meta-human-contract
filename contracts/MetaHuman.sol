@@ -43,12 +43,6 @@ contract MetaHuman is ERC721A, Ownable {
         string memory _symbol,
         uint256 _maxSupply
     ) ERC721A(_name, _symbol) {
-        require(
-            (_maxSupply == 100) ||
-                (_maxSupply == 1000) ||
-                (_maxSupply == 10000),
-            "Operations: Wrong max supply"
-        );
         maxSupply = _maxSupply;
     }
 
