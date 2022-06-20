@@ -2,7 +2,8 @@
   "name": "meta-human-contract",
   "scripts": {
     "test": "hardhat test",
-    "generate": "hardhat typechain"
+    "generate": "hardhat typechain",
+    "deploy": "hardhat run scripts/deploy.ts --network baobab"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
