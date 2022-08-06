@@ -7,7 +7,7 @@
   <p align="center">contract written in solidity for klaytn</p>
   <p align="center"><b>Project Closed</b></p>
   <p align="center">Authored by Koo Hyong Mo</p>
-  
+  <a href="https://github.com/chrisais9/nft-generator" align="center">MHAF Generator</a>
 </div>
 
 
