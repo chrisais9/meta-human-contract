@@ -1,10 +1,33 @@
 <div align="center">
-<img width="300" src="https://github.com/chrisais9/meta-human-contract/blob/master/images/header.jpg"/>
+<img width="500" src="https://github.com/chrisais9/meta-human-contract/blob/master/images/header.jpg"/>
   <h2 align="center">META HUMAN</h2>
-  <p align="center">contract written in sol for klaytn</p>
-  <p align="center">{Address}</p>
+  <p align="center">contract written in solidity for klaytn</p>
+  <p align="center"><b>Project Closed</b></p>
   <p align="center">Authored by Koo Hyong Mo</p>
 </div>
+
+
+
+## Prerequisite
+
+`npm run test`
+- Hardhat
+- Solidity ^0.8.11
+
+## Function
+
+- Whitelist : Uses merkleproof algorithm to save gas consumption
+- Reveal
+- Mint
+
+## Test
+
+Using Mocha framework
+
+Runs `npm run test` automatically using CI
+
+See `/test` folder
+
 
 ## Gas Consumption
 
