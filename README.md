@@ -1,5 +1,5 @@
 <div align="center">
-<img width="300" src="/meta-human-contract/images/header.png"/>
+<img width="300" src="https://github.com/chrisais9/meta-human-contract/blob/master/images/header.jpg"/>
   <h2 align="center">META HUMAN</h2>
   <p align="center">contract written in sol for klaytn</p>
   <p align="center">{Address}</p>
